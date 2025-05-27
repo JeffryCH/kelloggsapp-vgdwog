@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../services/auth_service.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
@@ -16,14 +17,14 @@ class LoginWidget extends StatefulWidget {
 
 class _LoginWidgetState extends State<LoginWidget> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final TextEditingController _cedulaController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _cedulaController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -36,18 +37,30 @@ class _LoginWidgetState extends State<LoginWidget> {
     setState(() => _isLoading = true);
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      final authService = AuthService();
+      final username = _cedulaController.text.trim();
+      final password = _passwordController.text;
       
-      // Navigate to home page on success
+      // Authenticate user
+      final user = await authService.login(username, password);
+      
+      // Navigate to dashboard on success
       if (mounted) {
-        context.go('/main');
+        context.go('/dashboard');
       }
     } catch (e) {
       // Handle error
+      String errorMessage = 'Error al iniciar sesión';
+      if (e.toString().contains('Invalid username or password')) {
+        errorMessage = 'Cédula o contraseña incorrectos';
+      }
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al iniciar sesión: $e')),
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -89,19 +102,20 @@ class _LoginWidgetState extends State<LoginWidget> {
                   ),
                   const SizedBox(height: 32),
                   TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
+                    controller: _cedulaController,
+                    keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
-                      labelText: 'Correo electrónico',
-                      prefixIcon: Icon(Icons.email_outlined),
+                      labelText: 'Número de cédula',
+                      prefixIcon: Icon(Icons.badge_outlined),
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Por favor ingresa tu correo';
+                        return 'Por favor ingresa tu número de cédula';
                       }
-                      if (!value.contains('@')) {
-                        return 'Ingresa un correo válido';
+                      // Solo validar longitud si no es admin
+                      if (value.toLowerCase() != 'admin' && value.length != 8) {
+                        return 'La cédula debe tener exactamente 8 dígitos';
                       }
                       return null;
                     },

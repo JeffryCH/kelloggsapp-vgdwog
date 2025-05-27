@@ -9,6 +9,7 @@ import 'serialization_util.dart';
 
 import '/index.dart';
 import '/pages/login/login_widget.dart';
+import '/pages/dashboard/dashboard_widget.dart' as dashboard;
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -47,6 +48,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: LoginWidget.routeName,
           path: LoginWidget.routePath,
           builder: (context, params) => const LoginWidget(),
+        ),
+        FFRoute(
+          name: dashboard.DashboardPage.routeName,
+          path: dashboard.DashboardPage.routePath,
+          builder: (context, params) => const dashboard.DashboardPage(),
         ),
         FFRoute(
           name: MainWidget.routeName,
